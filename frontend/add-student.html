@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Student - Student Record System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    
+    <!-- Navigation -->
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Student Record System</h1>
+            <div class="space-x-4">
+                <a href="add-student.html" class="hover:underline">Add Student</a>
+                <a href="students.html" class="hover:underline">View Students</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto mt-10 max-w-md">
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Add New Student</h2>
+            
+            <!-- Add Student Form -->
+            <form id="addStudentForm">
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">Name</label>
+                    <input 
+                        type="text" 
+                        id="name" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter student name"
+                        required
+                    >
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">Roll Number</label>
+                    <input 
+                        type="text" 
+                        id="rollNumber" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter roll number"
+                        required
+                    >
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">Course</label>
+                    <input 
+                        type="text" 
+                        id="course" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter course (e.g., B.Tech CSE)"
+                        required
+                    >
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">Year</label>
+                    <select 
+                        id="year" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                    >
+                        <option value="">Select Year</option>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                    </select>
+                </div>
+
+                <button 
+                    type="submit" 
+                    class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-semibold"
+                >
+                    Add Student
+                </button>
+            </form>
+
+            <!-- Message Display -->
+            <div id="message" class="mt-4 text-center"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center mt-10 text-gray-600 pb-4">
+        <p>Created by Sharansh Jha | Learning REST APIs and Backend Development</p>
+    </footer>
+
+    <script>
+        // JavaScript code to handle form submission
+        // calling backend REST API to add student
+        // simple implementation for student project
+
+        const form = document.getElementById('addStudentForm');
+        const messageDiv = document.getElementById('message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // getting form data
+            const name = document.getElementById('name').value;
+            const rollNumber = document.getElementById('rollNumber').value;
+            const course = document.getElementById('course').value;
+            const year = document.getElementById('year').value;
+
+            // creating student object
+            const studentData = {
+                name: name,
+                rollNumber: rollNumber,
+                course: course,
+                year: year
+            };
+
+            try {
+                // calling REST API to add student
+                const response = await fetch('http://localhost:3000/api/v1/students', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(studentData)
+                });
+
+                const data = await response.json();
+
+                // showing message based on response
+                if (data.success) {
+                    messageDiv.innerHTML = '<p class="text-green-600 font-semibold">' + data.message + '</p>';
+                    form.reset();
+                } else {
+                    messageDiv.innerHTML = '<p class="text-red-600 font-semibold">' + data.message + '</p>';
+                }
+
+            } catch (error) {
+                messageDiv.innerHTML = '<p class="text-red-600 font-semibold">Error connecting to server</p>';
+                console.log('Error:', error);
+            }
+        });
+    </script>
+
+</body>
+</html>

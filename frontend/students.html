@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Students - Student Record System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    
+    <!-- Navigation -->
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Student Record System</h1>
+            <div class="space-x-4">
+                <a href="add-student.html" class="hover:underline">Add Student</a>
+                <a href="students.html" class="hover:underline">View Students</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto mt-10 px-4">
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">All Students</h2>
+            
+            <!-- Students Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full table-auto">
+                    <thead>
+                        <tr class="bg-blue-600 text-white">
+                            <th class="px-4 py-2">Name</th>
+                            <th class="px-4 py-2">Roll Number</th>
+                            <th class="px-4 py-2">Course</th>
+                            <th class="px-4 py-2">Year</th>
+                            <th class="px-4 py-2">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                        <!-- Student data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Message Display -->
+            <div id="message" class="mt-4 text-center"></div>
+        </div>
+    </div>
+
+    <!-- Update Modal -->
+    <div id="updateModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold mb-4">Update Student</h3>
+            
+            <form id="updateForm">
+                <input type="hidden" id="updateId">
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">Name</label>
+                    <input 
+                        type="text" 
+                        id="updateName" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                    >
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">Roll Number</label>
+                    <input 
+                        type="text" 
+                        id="updateRollNumber" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                    >
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">Course</label>
+                    <input 
+                        type="text" 
+                        id="updateCourse" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                    >
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">Year</label>
+                    <select 
+                        id="updateYear" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                    >
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                    </select>
+                </div>
+
+                <div class="flex space-x-4">
+                    <button 
+                        type="submit" 
+                        class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-semibold"
+                    >
+                        Update
+                    </button>
+                    <button 
+                        type="button" 
+                        onclick="closeModal()" 
+                        class="flex-1 bg-gray-400 text-white py-2 rounded-lg hover:bg-gray-500 font-semibold"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center mt-10 text-gray-600 pb-4">
+        <p>Created by Sharansh Jha | Learning REST APIs and Backend Development</p>
+    </footer>
+
+    <script>
+        // JavaScript code to handle student operations
+        // calling backend REST API to fetch student records
+        // backend logic by Sharansh Jha
+
+        const tableBody = document.getElementById('studentTableBody');
+        const messageDiv = document.getElementById('message');
+        const modal = document.getElementById('updateModal');
+        const updateForm = document.getElementById('updateForm');
+
+        // function to load all students
+        async function loadStudents() {
+            try {
+                // calling REST API to get all students
+                const response = await fetch('http://localhost:3000/api/v1/students');
+                const data = await response.json();
+
+                if (data.success) {
+                    // clearing table first
+                    tableBody.innerHTML = '';
+
+                    // checking if students exist
+                    if (data.data.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-600">No students found</td></tr>';
+                        return;
+                    }
+
+                    // adding each student to table
+                    data.data.forEach(student => {
+                        const row = document.createElement('tr');
+                        row.className = 'border-b hover:bg-gray-50';
+                        row.innerHTML = `
+                            <td class="px-4 py-2">${student.name}</td>
+                            <td class="px-4 py-2">${student.rollNumber}</td>
+                            <td class="px-4 py-2">${student.course}</td>
+                            <td class="px-4 py-2">${student.year}</td>
+                            <td class="px-4 py-2">
+                                <button onclick="openUpdateModal('${student._id}', '${student.name}', '${student.rollNumber}', '${student.course}', '${student.year}')" 
+                                    class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 mr-2">
+                                    Update
+                                </button>
+                                <button onclick="deleteStudent('${student._id}')" 
+                                    class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+                                    Delete
+                                </button>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                }
+
+            } catch (error) {
+                messageDiv.innerHTML = '<p class="text-red-600 font-semibold">Error loading students</p>';
+                console.log('Error:', error);
+            }
+        }
+
+        // function to delete student
+        async function deleteStudent(id) {
+            // asking for confirmation
+            if (!confirm('Are you sure you want to delete this student?')) {
+                return;
+            }
+
+            try {
+                // calling REST API to delete student
+                const response = await fetch(`http://localhost:3000/api/v1/students/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    messageDiv.innerHTML = '<p class="text-green-600 font-semibold">' + data.message + '</p>';
+                    loadStudents(); // reload students list
+                } else {
+                    messageDiv.innerHTML = '<p class="text-red-600 font-semibold">' + data.message + '</p>';
+                }
+
+            } catch (error) {
+                messageDiv.innerHTML = '<p class="text-red-600 font-semibold">Error deleting student</p>';
+                console.log('Error:', error);
+            }
+        }
+
+        // function to open update modal
+        function openUpdateModal(id, name, rollNumber, course, year) {
+            document.getElementById('updateId').value = id;
+            document.getElementById('updateName').value = name;
+            document.getElementById('updateRollNumber').value = rollNumber;
+            document.getElementById('updateCourse').value = course;
+            document.getElementById('updateYear').value = year;
+            modal.classList.remove('hidden');
+        }
+
+        // function to close modal
+        function closeModal() {
+            modal.classList.add('hidden');
+        }
+
+        // handling update form submission
+        updateForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // getting form data
+            const id = document.getElementById('updateId').value;
+            const name = document.getElementById('updateName').value;
+            const rollNumber = document.getElementById('updateRollNumber').value;
+            const course = document.getElementById('updateCourse').value;
+            const year = document.getElementById('updateYear').value;
+
+            // creating update object
+            const updateData = {
+                name: name,
+                rollNumber: rollNumber,
+                course: course,
+                year: year
+            };
+
+            try {
+                // calling REST API to update student
+                const response = await fetch(`http://localhost:3000/api/v1/students/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    messageDiv.innerHTML = '<p class="text-green-600 font-semibold">' + data.message + '</p>';
+                    closeModal();
+                    loadStudents(); // reload students list
+                } else {
+                    messageDiv.innerHTML = '<p class="text-red-600 font-semibold">' + data.message + '</p>';
+                }
+
+            } catch (error) {
+                messageDiv.innerHTML = '<p class="text-red-600 font-semibold">Error updating student</p>';
+                console.log('Error:', error);
+            }
+        });
+
+        // loading students when page loads
+        loadStudents();
+    </script>
+
+</body>
+</html>
